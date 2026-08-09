@@ -5,10 +5,10 @@
 
 import { EngineError } from "@datacards/engine";
 
-// Overridable so local demos/tests can point the lane at a mock Issuing API
-// (scripts/mock-stripe.ts) instead of real Stripe — the payment leg stays
-// test-mode-only either way (makeStripeClient refuses non-sk_test_/rk_test_ keys).
-const STRIPE_BASE = (process.env.STRIPE_BASE_URL ?? "https://api.stripe.com").replace(/\/+$/, "");
+// The real Stripe API, always. The payment leg stays test-mode-only by design:
+// makeStripeClient refuses any key that isn't sk_test_/rk_test_, so live issuing
+// can never be touched from this lane.
+const STRIPE_BASE = "https://api.stripe.com";
 const STRIPE_VERSION = "2025-03-31.basil";
 // short TTL: a re-pointed metadata mapping must not serve a stale Issuing card for minutes
 const CARD_CACHE_TTL_MS = 60 * 1000;

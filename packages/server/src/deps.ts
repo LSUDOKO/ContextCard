@@ -1,6 +1,7 @@
 // Server dependency wiring. ONE process serves MCP + dashboard API + OAuth,
 // all gated by the same store. Engine objects are singletons here; tests build
-// their own AppDeps with fakes.
+// their own AppDeps (the live integration suites reuse the same real clients
+// from env — no doubles anywhere).
 
 import { DataHubClient, KeyedMutex, Store } from "@datacards/engine";
 import { makeStripeClient, type StripeClient } from "./stripe/client";
