@@ -103,6 +103,20 @@ claude mcp add datacards --transport http https://<host>/c/<card-secret>/mcp
 
 Lane A works in Claude Code, Cursor, VS Code, Gemini CLI, Windsurf, claude.ai custom connectors, or any MCP client that speaks Streamable HTTP. A self-hosted OAuth 2.1 lane (Lane C) is available for clients that require it: add the bare endpoint, the client discovers the OAuth lane, and the steward grants a card through a browser consent page. Revoking the card kills every token issued for it.
 
+### Buying something with the card (Stripe test-mode lane)
+
+Cards issued with a `budget.spend` term expose `card_credentials` and `fiat_pay` (see [Agent Tools](#agent-tools)) — requires `STRIPE_SECRET_KEY` (test mode) set on the server, see [Environment Variables](#environment-variables). Once connected (Lane A above), the agent can:
+
+```
+> use card_credentials to get the test Visa, then fiat_pay $4.90 at the demo shop
+```
+
+1. `card_credentials` mints/reveals a Stripe Issuing test-mode Visa (PAN, expiry, CVC) tied to the card.
+2. `fiat_pay` checks the card's (and every ancestor's) spend cap, authorizes the charge against Stripe, and books it to the ledger — idempotent on the Stripe authorization id, so a retried call never double-charges.
+3. The receipt includes `remaining_spend` and `spend_resets_at` so the agent knows its budget without a second call.
+
+Every dollar is Stripe test money against a test-mode Issuing card — no real funds move. `card_credentials`/`fiat_pay` are absent from the tool list entirely on cards without a `budget.spend` term or when Stripe isn't configured.
+
 ---
 
 ## Card Terms
