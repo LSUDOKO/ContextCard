@@ -1,0 +1,18 @@
+{
+  "name": "datacards",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd packages/server dev",
+    "typecheck": "bun run --cwd packages/engine typecheck && bun run --cwd packages/server typecheck && bun run --cwd packages/dashboard typecheck",
+    "test": "bun run --cwd packages/engine test && bun run --cwd packages/server test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  }
+}
