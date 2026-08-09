@@ -1,0 +1,89 @@
+/* The sign-in stage: a split title card (type left, tilted card right), the
+   aurora weather behind the chrome, everything rising in on mount (the `rv`
+   animation from globals.css). Same object language as the deck: porcelain
+   card, silk band, Funnel Display wordmark. */
+
+.stage {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: 48px;
+  padding: 48px clamp(28px, 7vw, 120px);
+  overflow: hidden;
+}
+
+/* the aurora: two soft beams and a horizon glow, pinned behind everything */
+.aurora {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.beamA {
+  position: absolute;
+  top: -30%;
+  left: -12%;
+  width: 62%;
+  height: 90%;
+  background: radial-gradient(closest-side, var(--accent-tint), transparent 70%);
+  filter: blur(10px);
+  opacity: 0.9;
+}
+.beamB {
+  position: absolute;
+  bottom: -35%;
+  right: -10%;
+  width: 58%;
+  height: 80%;
+  background: radial-gradient(closest-side, var(--mark), transparent 72%);
+  filter: blur(8px);
+  opacity: 0.8;
+}
+.beamC {
+  position: absolute;
+  top: 20%;
+  right: 22%;
+  width: 30%;
+  height: 40%;
+  background: radial-gradient(closest-side, var(--accent-tint), transparent 75%);
+  filter: blur(14px);
+  opacity: 0.7;
+}
+
+.type { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; max-width: 560px; }
+.wm {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: clamp(34px, 5vw, 52px);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1;
+}
+.tag { margin-top: 14px; font-family: var(--font-display), sans-serif; font-weight: 500; font-size: 17px; letter-spacing: -0.005em; color: var(--accent); }
+.lede { margin-top: 16px; font-size: 13.5px; line-height: 1.7; color: var(--body); max-width: 460px; }
+.quiet { margin-top: 26px; font-size: 12px; font-weight: 500; color: var(--label); }
+.ctarow { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.cta { height: 42px; padding: 0 24px; border-radius: 999px; font-size: 13.5px; font-weight: 500; }
+
+.counter { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; min-height: 420px; }
+.frame { width: min(420px, 100%); }
+.tilt {
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+.cardobj {
+  width: 100%;
+  aspect-ratio: 1.586;
+  transform: rotateY(-10deg) rotateX(4deg);
+  transition: transform 0.6s var(--ease);
+  box-shadow: 0 24px 64px -18px rgba(20, 20, 23, 0.35);
+}
+.tilt:hover .cardobj { transform: rotateY(-4deg) rotateX(2deg); }
+
+@media (max-width: 980px) {
+  .stage { grid-template-columns: 1fr; gap: 28px; padding: 40px 24px; }
+  .counter { min-height: 0; }
+  .frame { width: min(360px, 100%); }
+}
