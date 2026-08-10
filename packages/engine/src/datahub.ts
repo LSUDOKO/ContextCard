@@ -17,6 +17,11 @@ export type DataHubClientConfig = {
   token: string;
 };
 
+// MLModel is deliberately absent: MLModelProperties.name is the one nullable
+// `name` in the schema, and mixing it in makes GraphQL reject the whole selection
+// with a FieldsConflict. MLModel results still come back — just without a name.
+// datahub: add `... on MLModel { properties { mlName: name } }` plus a mapping
+// branch if ML assets ever need labels.
 const SEARCH_FRAGMENT = `
   fragment SearchEntityInfo on Entity {
     urn
@@ -28,7 +33,6 @@ const SEARCH_FRAGMENT = `
     ... on GlossaryNode { properties { name } }
     ... on Domain { properties { name } }
     ... on DataProduct { properties { name } }
-    ... on MLModel { properties { name } }
     ... on DataFlow { properties { name } }
     ... on DataJob { properties { name } }
   }
@@ -47,10 +51,10 @@ const ENTITY_DETAILS = `
         domain { domain { urn properties { name } } }
         tags { tags { tag { urn properties { name } } } }
         glossaryTerms { terms { term { urn properties { name } } } }
-        ownership { owners { owner { urn ... on CorpUser { properties { displayName } } ... on CorpGroup { properties { displayName } } } } }
+        ownership { owners { owner { ... on CorpUser { urn properties { displayName } } ... on CorpGroup { urn properties { displayName } } } } }
         schemaMetadata {
           fields { fieldPath type nativeDataType description nullable }
-          lastObserved
+          createdAt
         }
       }
       ... on Dashboard {
@@ -59,7 +63,7 @@ const ENTITY_DETAILS = `
         domain { domain { urn properties { name } } }
         tags { tags { tag { urn properties { name } } } }
         glossaryTerms { terms { term { urn properties { name } } } }
-        ownership { owners { owner { urn ... on CorpUser { properties { displayName } } ... on CorpGroup { properties { displayName } } } } }
+        ownership { owners { owner { ... on CorpUser { urn properties { displayName } } ... on CorpGroup { urn properties { displayName } } } } }
       }
       ... on Chart {
         properties { name description lastModified { time } }
@@ -67,15 +71,15 @@ const ENTITY_DETAILS = `
         domain { domain { urn properties { name } } }
         tags { tags { tag { urn properties { name } } } }
         glossaryTerms { terms { term { urn properties { name } } } }
-        ownership { owners { owner { urn ... on CorpUser { properties { displayName } } ... on CorpGroup { properties { displayName } } } } }
+        ownership { owners { owner { ... on CorpUser { urn properties { displayName } } ... on CorpGroup { urn properties { displayName } } } } }
       }
       ... on Container {
-        properties { name description lastModified { time } }
+        properties { name description }
         platform { urn name }
         domain { domain { urn properties { name } } }
         tags { tags { tag { urn properties { name } } } }
         glossaryTerms { terms { term { urn properties { name } } } }
-        ownership { owners { owner { urn ... on CorpUser { properties { displayName } } ... on CorpGroup { properties { displayName } } } } }
+        ownership { owners { owner { ... on CorpUser { urn properties { displayName } } ... on CorpGroup { urn properties { displayName } } } } }
       }
       ... on DataProduct {
         properties { name description }
@@ -88,7 +92,7 @@ const ENTITY_DETAILS = `
         domain { domain { urn properties { name } } }
       }
       ... on Document {
-        info { title text }
+        info { title contents { text } }
         domain { domain { urn properties { name } } }
         tags { tags { tag { urn properties { name } } } }
         glossaryTerms { terms { term { urn properties { name } } } }
@@ -109,8 +113,7 @@ const LINEAGE_QUERY = `
           ... on Dashboard { properties { name } }
           ... on Chart { properties { name } }
           ... on Container { properties { name } }
-          ... on DataJob { name }
-          ... on MLModel { name }
+          ... on DataJob { properties { name } }
         }
         degree
         paths { path { urn type } }
@@ -121,7 +124,7 @@ const LINEAGE_QUERY = `
 
 const SEARCH_QUERY = `
   ${SEARCH_FRAGMENT}
-  query Search($types: [EntityType!], $query: String!, $orFilters: [AndFilterInput!], $count: Int!, $start: Int!, $searchFlags: SearchFlagsInput) {
+  query Search($types: [EntityType!], $query: String!, $orFilters: [AndFilterInput!], $count: Int!, $start: Int!, $searchFlags: SearchFlags) {
     searchAcrossEntities(input: {
       query: $query
       count: $count
@@ -204,7 +207,6 @@ export class DataHubClient {
 
   private async ingest(aspects: Array<{ aspectName: string; aspect: Record<string, unknown> }>, urn: string, entityType: string): Promise<void> {
     let token = this.cfg.token;
-    if (token.startsWith("basic:")) token = (await this.graphql<{ me: { corpUser: { urn: string } } }>(GET_ME_QUERY, {}, "GetMe")).me.corpUser.urn.length > 0 ? token : token;
     // re-mint a real token for the REST call (basic auth is not accepted on REST)
     if (token.startsWith("basic:")) {
       const [, u, p] = token.split(":");
@@ -217,19 +219,26 @@ export class DataHubClient {
       if (!body.accessToken) throw new EngineError("datahub", "authentication returned no token");
       token = body.accessToken;
     }
+    // Aspect-level writes go to /aspects?action=ingestProposal. (/entities?action=ingest
+    // is the legacy snapshot lane and rejects this payload with "Parameter 'entity' is
+    // required".) The aspect itself travels as a JSON *string* under value/contentType.
     for (const a of aspects) {
-      const res = await fetch(`${this.cfg.baseUrl}/entities?action=ingest`, {
+      const res = await fetch(`${this.cfg.baseUrl}/aspects?action=ingestProposal`, {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          entityType,
-          entityUrn: urn,
-          aspectName: a.aspectName,
-          aspect: a.aspect,
-          changeType: "UPSERT",
+          proposal: {
+            entityType,
+            entityUrn: urn,
+            aspectName: a.aspectName,
+            changeType: "UPSERT",
+            aspect: { value: asciiJson(a.aspect), contentType: "application/json" },
+          },
         }),
       });
-      if (!res.ok) throw new EngineError("datahub", `ingest ${a.aspectName} failed (http ${res.status})`);
+      if (!res.ok) {
+        throw new EngineError("datahub", `ingest ${a.aspectName} failed (http ${res.status}): ${(await res.text()).slice(0, 200)}`);
+      }
     }
   }
 
@@ -350,7 +359,8 @@ export class DataHubClient {
           start: 0,
           count: Math.min(Math.max(input.count ?? 10, 1), 50),
           source: input.source ?? null,
-          subjects: [{ datasetUrn: input.urn }],
+          // ListQueriesInput takes a single datasetUrn — there is no `subjects` input
+          datasetUrn: input.urn,
         },
       },
       "ListQueries",
@@ -398,14 +408,21 @@ export class DataHubClient {
     const urn = `urn:li:document:${docId}`;
     const parent = "urn:li:document:__system_shared_documents";
     const nowMs = Date.now();
+    // DocumentInfo requires contents / status / created / lastModified; the body
+    // lives under contents.text (a bare `text` field is rejected with a 422).
+    const stamp = { time: nowMs, actor };
     const aspect = {
       title: input.title,
-      text: input.content,
+      contents: { text: input.content },
+      status: { state: "PUBLISHED" },
       type: input.docType.toUpperCase(),
       parentDocument: { document: parent },
       relatedDocuments: [],
-      relatedAssets: (input.relatedAssets ?? []).map((urn2) => ({ dataset: urn2 })),
-      lastModified: { time: nowMs, actor },
+      // each entry is { asset: <urn> } — a `dataset` key fails validation with
+      // "/relatedAssets/0/asset :: field is required"
+      relatedAssets: (input.relatedAssets ?? []).map((urn2) => ({ asset: urn2 })),
+      created: stamp,
+      lastModified: stamp,
     };
     await this.ingest(
       [
@@ -422,12 +439,16 @@ export class DataHubClient {
           aspectName: "documentInfo",
           aspect: {
             title: "Shared",
-            text: "Contains shared documents authored through AI agents.",
+            contents: { text: "Contains shared documents authored through AI agents." },
+            status: { state: "PUBLISHED" },
             type: "FOLDER",
-            parentDocument: null,
+            // parentDocument is OMITTED, not null: a null fails validation with
+            // "/parentDocument :: record type is not backed by a DataMap", and the
+            // .catch below would swallow it — leaving the folder titled "Untitled".
             relatedDocuments: [],
             relatedAssets: [],
-            lastModified: { time: nowMs, actor },
+            created: stamp,
+            lastModified: stamp,
           },
         },
       ],
@@ -462,6 +483,14 @@ export class DataHubClient {
   }
 }
 
+/** JSON with every non-ASCII character \uXXXX-escaped. The aspect payload rides
+ * inside a JSON *string* field, and GMS rejects raw non-ASCII there with a
+ * request-level "failed validation" 400 — so an em dash in an agent's findings
+ * would kill the whole write. A charset header does not help; escaping does. */
+function asciiJson(value: unknown): string {
+  return JSON.stringify(value).replace(/[\u0080-\uffff]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
+}
+
 /** The GMS ingest entityType for a URN (lowercase prefix, defaulting to dataset). */
 function entityTypeForUrn(urn: string): string {
   const m = urn.match(/^urn:li:([a-z]+):/i);
@@ -478,7 +507,7 @@ function metaFromEntity(e: Record<string, unknown>): Partial<HubEntityMeta> {
   const terms = e.glossaryTerms as { terms?: Array<{ term?: { urn?: string; properties?: { name?: string } } }> } | undefined;
   const ownership = e.ownership as { owners?: Array<{ owner?: { urn?: string; properties?: { displayName?: string } } }> } | undefined;
   const schema = e.schemaMetadata as
-    | { fields?: Array<{ fieldPath?: string; type?: string | null; nativeDataType?: string | null; description?: string | null; nullable?: boolean | null }>; lastObserved?: number | null }
+    | { fields?: Array<{ fieldPath?: string; type?: string | null; nativeDataType?: string | null; description?: string | null; nullable?: boolean | null }>; createdAt?: number | null }
     | undefined;
   const name = (props.name ?? e.name ?? null) as string | null;
   return {
@@ -501,7 +530,7 @@ function metaFromEntity(e: Record<string, unknown>): Partial<HubEntityMeta> {
       description: f.description ?? null,
       nullable: f.nullable ?? null,
     })),
-    lastIngested: schema?.lastObserved ?? null,
+    lastIngested: schema?.createdAt ?? null,
     raw: e,
   };
 }

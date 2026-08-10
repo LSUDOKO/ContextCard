@@ -17,6 +17,8 @@ hackathon
 # local-only project docs (never on GitHub)
 CLAUDE.md
 PLAN.md
+# vendored copy of DataHub's own documentation, kept locally as reference
+docs.md
 
 # anything Claude Code related (session state, local MCP config, skills)
 .claude/

@@ -1,0 +1,19 @@
+# Local override for DataHub's quickstart compose. The storage layer only ever
+# talks to GMS over the compose network, so we drop its host port publishes —
+# a laptop usually already runs something on 3306 / 9092 / 9200. GMS and the
+# frontend keep their (remappable) host ports; those are what we actually use.
+services:
+  # The generated quickstart compose hardcodes METADATA_SERVICE_AUTH_ENABLED, so
+  # an env var can't move it. Auth must stay ON: the frontend logs a user in by
+  # asking GMS to mint a session token, and GMS refuses when auth is off — the UI
+  # login then fails with a 500 ("Bad response from the Metadata Service").
+  datahub-gms-quickstart:
+    environment:
+      METADATA_SERVICE_AUTH_ENABLED: "true"
+
+  mysql:
+    ports: !override []
+  kafka-broker:
+    ports: !override []
+  opensearch:
+    ports: !override []

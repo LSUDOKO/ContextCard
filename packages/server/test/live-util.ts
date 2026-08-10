@@ -4,7 +4,9 @@
 // DataHub GMS; when they're absent the suites skip with a message. Everything in
 // this file is a real client or a real HTTP helper — no doubles, no mocks.
 
-import { type DataHubClient, isSensitiveEntity, type HubEntityMeta } from "@datacards/engine";
+// DataHubClient is a value import (realDatahub calls its static factory) — a
+// `type` import here erases at runtime and the factory call throws.
+import { DataHubClient, isSensitiveEntity, type HubEntityMeta } from "@datacards/engine";
 import type { Hono } from "hono";
 import { makeStripeClient, type StripeClient } from "../src/stripe/client";
 
@@ -110,10 +112,17 @@ export async function mcpCall(
   envelope: { error?: { message?: string } } | null;
 }> {
   const url = `/c/${secret}/mcp`;
+  // app.request() sends no Host header, and the MCP lane's DNS-rebinding guard
+  // rejects a missing Host outright once DATACARDS_PUBLIC_MCP_BASE arms the
+  // allowlist. A real client always sends one, so the test does too.
   const post = (body: unknown) =>
     app.request(url, {
       method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json, text/event-stream" },
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        host: "localhost",
+      },
       body: JSON.stringify(body),
     });
   const init = await post({

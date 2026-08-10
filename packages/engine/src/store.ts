@@ -286,9 +286,16 @@ export class Store {
     const ids = this.subtreeIds(cardId);
     if (ids.length === 0) return 0;
     const delCharges = this.db.query(`DELETE FROM charges WHERE card_id = $id`);
+    // fiat_links.card_id REFERENCES cards(id) — leaving the row behind makes the
+    // card undeletable forever ("FOREIGN KEY constraint failed") once it has ever
+    // minted Stripe credentials.
+    const delFiat = this.db.query(`DELETE FROM fiat_links WHERE card_id = $id`);
     const delCard = this.db.query(`DELETE FROM cards WHERE id = $id`);
     const tx = this.db.transaction((items: string[]) => {
-      for (const id of items) delCharges.run({ $id: id });
+      for (const id of items) {
+        delCharges.run({ $id: id });
+        delFiat.run({ $id: id });
+      }
       for (const id of [...items].reverse()) delCard.run({ $id: id });
     });
     tx(ids);

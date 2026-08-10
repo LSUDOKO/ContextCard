@@ -49,12 +49,16 @@ export default function Home() {
       });
   }, [token, clear]);
 
+  // Boot lifts once the app has something to show: the cockpit when a token
+  // checks out, the login screen when there is no token at all. Gating this on
+  // `authed` alone strands a first-time visitor — no token means no successful
+  // cards() call, so the overlay would sit over the login form forever.
   useEffect(() => {
-    if (authed) {
+    if (authed || !token) {
       const t = setTimeout(() => setBootDone(true), 500);
       return () => clearTimeout(t);
     }
-  }, [authed]);
+  }, [authed, token]);
 
   if (!token) {
     return (

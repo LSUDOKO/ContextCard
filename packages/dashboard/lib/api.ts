@@ -30,6 +30,11 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
       headers: {
         authorization: `Bearer ${token}`,
         "content-type": "application/json",
+        // When the API is reached through an ngrok free tunnel (hosted dashboard ->
+        // server running on the steward's own machine), ngrok answers browser
+        // user-agents with an HTML interstitial instead of proxying. This header
+        // opts out of it. Harmless on every other host.
+        "ngrok-skip-browser-warning": "1",
         ...init?.headers,
       },
       cache: "no-store",

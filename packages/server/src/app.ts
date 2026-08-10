@@ -53,7 +53,10 @@ export function createApp(deps: AppDeps): Hono {
         const allowed = (process.env.DATACARDS_CORS_ORIGINS ?? "http://localhost:4071").split(",");
         return allowed.includes(origin) ? origin : null;
       },
-      allowHeaders: ["authorization", "content-type"],
+      // ngrok-skip-browser-warning is sent by the dashboard when the API is reached
+      // through an ngrok tunnel; it must be allow-listed or the preflight passes and
+      // the browser still blocks the real request.
+      allowHeaders: ["authorization", "content-type", "ngrok-skip-browser-warning"],
       allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
     }),
   );
