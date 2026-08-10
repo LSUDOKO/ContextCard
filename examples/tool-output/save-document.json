@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "urn": "urn:li:document:card-1faddc6c-aebd-46bf-883c-8cd350c42f6b",
+  "message": "Successfully created document: Revenue reporting — which table to trust",
+  "budget": {
+    "remaining_this_period": 196,
+    "remaining_lifetime": null,
+    "period_resets_at": 1786469746
+  }
+}

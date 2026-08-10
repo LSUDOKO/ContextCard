@@ -1,0 +1,15 @@
+{
+  "query": "*",
+  "total": 4,
+  "results": [
+    { "urn": "urn:li:dataset:(urn:li:dataPlatform:hive,fct_users_created,PROD)", "type": null, "name": "fct_users_created" },
+    { "urn": "urn:li:dataset:(urn:li:dataPlatform:hive,fct_users_deleted,PROD)", "type": null, "name": "fct_users_deleted" },
+    { "urn": "urn:li:dashboard:(looker,baz)", "type": null, "name": "Baz Dashboard" },
+    { "urn": "urn:li:dataset:(urn:li:dataPlatform:hive,SampleHiveDataset,PROD)", "type": null, "name": null }
+  ],
+  "budget": {
+    "remaining_this_period": 199,
+    "remaining_lifetime": null,
+    "period_resets_at": 1786469659
+  }
+}

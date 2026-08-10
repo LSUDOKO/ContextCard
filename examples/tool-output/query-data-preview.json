@@ -1,0 +1,12 @@
+{
+  "urn": "urn:li:dataset:(urn:li:dataPlatform:hive,fct_users_created,PROD)",
+  "sql": "SELECT * FROM fct_users_created LIMIT 5",
+  "status": "preview",
+  "note": "no SQL warehouse is attached — schema-backed column preview, not live execution",
+  "row_cap": 100,
+  "limit_used": 5,
+  "columns": [
+    { "column": "user_id", "type": "BOOLEAN", "description": "Id of the user created" },
+    { "column": "user_name", "type": "BOOLEAN", "description": "Name of the user created" }
+  ]
+}

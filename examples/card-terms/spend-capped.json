@@ -1,0 +1,9 @@
+{
+  "name": "procurement-agent",
+  "terms": {
+    "budget": {
+      "period": { "amount": 100, "seconds": 86400 },
+      "spend": { "amount": 300, "seconds": 86400 }
+    }
+  }
+}

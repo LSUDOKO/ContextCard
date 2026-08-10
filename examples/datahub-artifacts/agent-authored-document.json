@@ -1,0 +1,18 @@
+{
+  "data": {
+    "entity": {
+      "urn": "urn:li:document:card-1faddc6c-aebd-46bf-883c-8cd350c42f6b",
+      "info": {
+        "title": "Revenue reporting — which table to trust",
+        "contents": {
+          "text": "Findings from the Finance domain review.\n\nUse fct_users_created as the canonical signup fact table — it is the only Finance-domain table with an owner and a maintained schema. fct_users_deleted mirrors its grain and joins on user_id.\n\nDo NOT use logging_events for revenue reporting: it sits in the Marketing domain and carries a PII classification, so cards scoped to Finance cannot read it."
+        },
+        "parentDocument": { "document": "urn:li:document:__system_shared_documents" },
+        "relatedAssets": [
+          { "asset": "urn:li:dataset:(urn:li:dataPlatform:hive,fct_users_created,PROD)" }
+        ]
+      }
+    }
+  },
+  "extensions": {}
+}

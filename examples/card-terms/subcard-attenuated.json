@@ -1,0 +1,16 @@
+{
+  "name": "schema-reviewer-subagent",
+  "terms": {
+    "scope": {
+      "domains": ["urn:li:domain:finance"],
+      "entityTypes": ["DATASET"],
+      "lineageDepth": 1
+    },
+    "budget": {
+      "period": { "amount": 25, "seconds": 86400 }
+    },
+    "mutations": "none",
+    "subcards": false,
+    "maxRows": 50
+  }
+}

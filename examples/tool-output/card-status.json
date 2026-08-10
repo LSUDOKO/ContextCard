@@ -1,0 +1,22 @@
+{
+  "card_id": "615a5d75-b370-4146-923c-607d74ae766a",
+  "name": "local-demo",
+  "status": "active",
+  "terms": {
+    "budget": { "period": { "amount": 100, "seconds": 86400 } },
+    "mutations": "documents"
+  },
+  "remaining_this_period": 97,
+  "remaining_lifetime": null,
+  "period_resets_at": "2026-08-11T16:49:24.000Z",
+  "remaining_spend": null,
+  "spend_resets_at": null,
+  "expires_at": null,
+  "uses_remaining": null,
+  "subcards": [],
+  "recent_access": [
+    { "tool": "save_document", "target": "urn:li:document:card-1faddc6c", "status": "ok", "memo": "\"Revenue reporting — which table to trust\"", "at": "2026-08-11T00:15:46.000Z" },
+    { "tool": "query_data", "target": "urn:li:dataset:(urn:li:dataPlatform:hive,fct_users_created,PROD)", "status": "ok", "memo": "preview 5 rows", "at": "2026-08-11T00:14:02.000Z" },
+    { "tool": "search", "target": null, "status": "ok", "memo": "q=\"users\" -> 14 hits", "at": "2026-08-11T00:12:55.000Z" }
+  ]
+}

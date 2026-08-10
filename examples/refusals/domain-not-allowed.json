@@ -1,0 +1,10 @@
+{
+  "code": "domain_not_allowed",
+  "message": "entity urn:li:dataset:(urn:li:dataPlatform:kafka,SampleKafkaDataset,PROD) is outside this card's scope",
+  "context": {
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:kafka,SampleKafkaDataset,PROD)",
+    "type": "DATASET",
+    "domains": ["urn:li:domain:marketing"],
+    "platform": "urn:li:dataPlatform:kafka"
+  }
+}

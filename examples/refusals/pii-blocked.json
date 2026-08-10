@@ -1,0 +1,9 @@
+{
+  "code": "pii_blocked",
+  "message": "dataset urn:li:dataset:(urn:li:dataPlatform:hive,logging_events,PROD) carries a PII/sensitive classification — this card may not query it",
+  "context": {
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:hive,logging_events,PROD)",
+    "glossary_terms": [],
+    "tags": ["Blast-Risk-Critical", "urn:li:tag:PII"]
+  }
+}

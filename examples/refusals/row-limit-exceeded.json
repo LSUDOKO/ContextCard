@@ -1,0 +1,9 @@
+{
+  "code": "row_limit_exceeded",
+  "message": "LIMIT 5000 exceeds this card's 100-row cap",
+  "context": {
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:hive,fct_users_created,PROD)",
+    "max_rows": 100,
+    "requested": 5000
+  }
+}

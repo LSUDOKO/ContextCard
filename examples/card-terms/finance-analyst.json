@@ -1,0 +1,14 @@
+{
+  "name": "northwind-audit-agent",
+  "terms": {
+    "scope": {
+      "domains": ["urn:li:domain:finance"],
+      "lineageDepth": 2
+    },
+    "budget": {
+      "period": { "amount": 200, "seconds": 86400 }
+    },
+    "mutations": "documents",
+    "maxRows": 100
+  }
+}
