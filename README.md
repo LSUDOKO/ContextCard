@@ -1,3 +1,7 @@
+<div align="center">
+   <img width="480" height="350" alt="Gemini_Generated_Image_rvpbjurvpbjurvpb-removebg-preview" src="https://github.com/user-attachments/assets/aec7c9c0-d8a3-42ed-96ff-dcc6bb921a28" />
+</div>
+
 # DataCards
 
 Scoped, revocable **context cards** that gate what AI agents can see and do inside your DataHub catalog — which domains, platforms and entity types, how many calls per period, and whether they can write findings back. Any agent plugs a card in over MCP; the connection is the card, and revoking it kills access instantly.
